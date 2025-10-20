@@ -119,10 +119,65 @@ The backend provides several API endpoints:
 - **APIs**: 
   - Helius RPC (Enhanced transaction data & DEX parsing)
   - Solscan Public API (Transaction history)
+  - CoinGecko API (Historical SOL/USD pricing)
 - **Dependencies**: 
   - axios (HTTP client)
   - cors (Cross-origin resource sharing)
   - dotenv (Environment variables)
+
+## 🚀 Deployment to Railway
+
+### Step 1: Push to GitHub
+```bash
+# The repository is already initialized with all files committed
+
+# Add your GitHub repository (replace with your actual repo URL)
+git remote add origin https://github.com/yourusername/lotto-af-lottery.git
+
+# Push to GitHub
+git push -u origin master
+```
+
+### Step 2: Deploy to Railway
+1. Go to [Railway.app](https://railway.app) and sign up/login with GitHub
+2. Click **"New Project"** → **"Deploy from GitHub repo"**
+3. Select your `lotto-af-lottery` repository
+4. Railway will auto-detect your Node.js app and install dependencies
+5. Add environment variables in Railway dashboard:
+   - `HELIUS_API_KEY` = `f749d6d6-c885-4a88-97a0-6ec0649500ea` (or your key)
+   - Railway auto-sets `PORT`, but you can set it to `3000` if needed
+6. Click **"Deploy"**
+7. Wait for deployment to complete (~2-3 minutes)
+8. Railway will give you a public URL like `https://lotto-af-lottery.up.railway.app`
+
+### Step 3: Optional - Add Custom Domain
+1. In Railway dashboard, go to your project Settings
+2. Under **"Domains"**, click "Generate Domain" for a Railway subdomain
+3. Or add your own custom domain and update DNS records
+
+### Environment Variables for Railway:
+```bash
+HELIUS_API_KEY=f749d6d6-c885-4a88-97a0-6ec0649500ea
+PORT=3000
+NODE_ENV=production
+```
+
+### Railway Features:
+- ✅ **Auto-deployment** on git push
+- ✅ **Free tier** available (500 hours/month)
+- ✅ **Automatic HTTPS**
+- ✅ **Environment variables** securely stored
+- ✅ **Always-on** web service
+- ✅ **Custom domains** supported
+- ✅ **Logs & monitoring** built-in
+
+### After Deployment:
+Your lottery system will be live at your Railway URL! Users can:
+- Create lottery draws for specific time periods
+- Check if they're in the first 69 buyers
+- View and save lottery results
+- Access the admin panel to manage blocklist
+- Use the diagnostic scan page for troubleshooting
 
 ## LOTTA AF Token Information
 
