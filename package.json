@@ -1,0 +1,28 @@
+{
+  "name": "lotto-af-on-chain-lottery",
+  "version": "1.0.0",
+  "description": "On-chain lottery system for LOTTA AF token on Solana blockchain",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "solana",
+    "lottery",
+    "blockchain",
+    "meme-coin",
+    "lotta-af"
+  ],
+  "author": "LOTTO AF Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0"
+  }
+}
+

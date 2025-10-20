@@ -1,0 +1,9 @@
+{
+  "blockedWallets": [
+    "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC"
+  ],
+  "reason": {
+    "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": "Liquidity Pool - High frequency trading account"
+  }
+}
+

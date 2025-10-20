@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotto AF - Admin Panel</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #14F195;
+            --secondary-color: #9945FF;
+            --bg-dark: #0d1117;
+            --bg-light: #161b22;
+            --bg-lighter: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --error: #f85149;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f2e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .section {
+            background: var(--bg-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            background: var(--bg-lighter);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            color: var(--bg-dark);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(20, 241, 149, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, var(--error), #d29922);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-lighter);
+        }
+
+        th {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background: var(--bg-lighter);
+        }
+
+        .wallet-cell {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .remove-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .remove-btn:hover {
+            opacity: 0.8;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: var(--bg-dark);
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .info-box {
+            background: rgba(20, 241, 149, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ LOTTO AF ADMIN PANEL</h1>
+        <p class="subtitle">Manage lottery settings and excluded wallets</p>
+
+        <div class="nav-links">
+            <a href="index.html">← Back to Lottery</a>
+            <a href="scan.html">Diagnostic Scan</a>
+        </div>
+
+        <!-- Add to Blocklist Section -->
+        <div class="section">
+            <h2>🚫 Add Wallet to Blocklist</h2>
+            <div class="info-box">
+                <strong>What is this?</strong> Exclude wallets from lottery results. Use this for liquidity pools, bots, or other non-user accounts that shouldn't win lottery numbers.
+            </div>
+
+            <div class="form-group">
+                <label>Wallet Address</label>
+                <input type="text" id="newWalletAddress" placeholder="Solana wallet address (e.g., HLnpSz9h...)" maxlength="44">
+            </div>
+
+            <div class="form-group">
+                <label>Reason (Optional)</label>
+                <input type="text" id="newWalletReason" placeholder="e.g., Liquidity Pool, Bot Account, etc.">
+            </div>
+
+            <button class="btn" onclick="addToBlocklist()">🚫 Add to Blocklist</button>
+        </div>
+
+        <!-- Current Blocklist Section -->
+        <div class="section">
+            <h2>📋 Current Blocklist <span class="stat-badge" id="blocklistCount">0</span></h2>
+            
+            <table id="blocklistTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Wallet Address</th>
+                        <th>Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="blocklistBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            Loading blocklist...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
+
