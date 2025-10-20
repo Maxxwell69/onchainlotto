@@ -24,7 +24,7 @@ function displayBlocklist(data) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                    No blocked wallets yet. Add wallets to exclude them from lottery results.
+                    No blocked wallets yet. Add wallets to exclude them from drawing results.
                 </td>
             </tr>
         `;
@@ -76,7 +76,7 @@ async function addToBlocklist() {
             },
             body: JSON.stringify({
                 wallet,
-                reason: reason || 'Excluded from lottery'
+                reason: reason || 'Excluded from drawing'
             })
         });
         

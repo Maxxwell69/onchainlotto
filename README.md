@@ -1,18 +1,18 @@
-# 🎰 LOTTO AF ON CHAIN LOTTERY
+# 🎰 LOTTO AF ON CHAIN DRAWING
 
-The official on-chain lottery system for $LOTTA AF token holders. Find out if you're one of the first 69 buyers and check your lottery number!
+The official on-chain drawing system for $LOTTA AF token holders. Find out if you're one of the first 69 buyers and check your drawing number!
 
 ## Features
 
-### 🎰 LOTTO AF LOTTERY SYSTEM
-- **Check Your Lottery Number**: See if you're one of the first 69 $LOTTA AF buyers
-- **Time-Based Lottery Draws**: Set date/time ranges for different lottery periods
+### 🎰 LOTTO AF DRAWING SYSTEM
+- **Check Your Drawing Number**: See if you're one of the first 69 $LOTTA AF buyers
+- **Time-Based Drawing Draws**: Set date/time ranges for different drawing periods
 - **Price Filtering**: Filter entries by minimum purchase amount
-- **Automatic Numbering**: System assigns lottery numbers 1-69 based on buy order
+- **Automatic Numbering**: System assigns drawing numbers 1-69 based on buy order
 - **Timezone Support**: View buy times in your preferred timezone
 - **Multi-DEX Support**: Tracks buys from Raydium, Jupiter, Pump.fun, and more
 - **Detailed Winner Info**: See tokens bought, SOL spent, and exact buy time
-- **Export Lottery Results**: Download winner list as CSV
+- **Export Drawing Results**: Download winner list as CSV
 
 ### 🔍 Wallet Scanner
 - Scan any Solana wallet address
@@ -66,26 +66,26 @@ Or if you have `node server.js` running already, it's good to go!
 http://localhost:3000
 ```
 
-### Using the LOTTO AF Lottery
+### Using the LOTTO AF Drawing
 
 1. **Go to**: `http://localhost:3000`
 
-2. **Set Lottery Parameters**:
+2. **Set Drawing Parameters**:
    - **Token Contract Address**: Pre-filled with $LOTTA AF address (FvNcnFnWtschwYRNP758bg5yqmXBUKdDDcUcbrVvKLHv)
-   - **Start Date & Time**: When the lottery period begins
-   - **End Date & Time**: When the lottery period ends
+   - **Start Date & Time**: When the drawing period begins
+   - **End Date & Time**: When the drawing period ends
    - **Min Price** (Optional): Minimum SOL purchase to qualify (default: any amount)
    - **Timezone**: Choose your timezone
 
-3. **Click "🎰 Draw Lottery Numbers (1-69)"**
+3. **Click "🎰 Draw Drawing Numbers (1-69)"**
 
-4. **View Lottery Results**:
-   - See the first 69 buyers and their lottery numbers
+4. **View Drawing Results**:
+   - See the first 69 buyers and their drawing numbers
    - Check if your wallet is among the winners
    - View amounts purchased and exact buy times
    - Click "Copy" to copy winner wallet addresses
    - Click "View" to verify transactions on Solscan
-   - Export all lottery results to CSV
+   - Export all drawing results to CSV
 
 ### Using the Wallet Scanner
 
@@ -132,7 +132,7 @@ The backend provides several API endpoints:
 # The repository is already initialized with all files committed
 
 # Add your GitHub repository (replace with your actual repo URL)
-git remote add origin https://github.com/yourusername/lotto-af-lottery.git
+git remote add origin https://github.com/yourusername/lotto-af-drawing.git
 
 # Push to GitHub
 git push -u origin master
@@ -141,14 +141,14 @@ git push -u origin master
 ### Step 2: Deploy to Railway
 1. Go to [Railway.app](https://railway.app) and sign up/login with GitHub
 2. Click **"New Project"** → **"Deploy from GitHub repo"**
-3. Select your `lotto-af-lottery` repository
+3. Select your `lotto-af-drawing` repository
 4. Railway will auto-detect your Node.js app and install dependencies
 5. Add environment variables in Railway dashboard:
    - `HELIUS_API_KEY` = `f749d6d6-c885-4a88-97a0-6ec0649500ea` (or your key)
    - Railway auto-sets `PORT`, but you can set it to `3000` if needed
 6. Click **"Deploy"**
 7. Wait for deployment to complete (~2-3 minutes)
-8. Railway will give you a public URL like `https://lotto-af-lottery.up.railway.app`
+8. Railway will give you a public URL like `https://lotto-af-drawing.up.railway.app`
 
 ### Step 3: Optional - Add Custom Domain
 1. In Railway dashboard, go to your project Settings
@@ -172,10 +172,10 @@ NODE_ENV=production
 - ✅ **Logs & monitoring** built-in
 
 ### After Deployment:
-Your lottery system will be live at your Railway URL! Users can:
-- Create lottery draws for specific time periods
+Your drawing system will be live at your Railway URL! Users can:
+- Create drawing draws for specific time periods
 - Check if they're in the first 69 buyers
-- View and save lottery results
+- View and save drawing results
 - Access the admin panel to manage blocklist
 - Use the diagnostic scan page for troubleshooting
 
@@ -185,24 +185,24 @@ Your lottery system will be live at your Railway URL! Users can:
 **Contract Address:** `FvNcnFnWtschwYRNP758bg5yqmXBUKdDDcUcbrVvKLHv`  
 **Blockchain:** Solana  
 
-The lottery system automatically tracks all buys of $LOTTA AF and assigns numbers 1-69 to the first buyers within your selected time range.
+The drawing system automatically tracks all buys of $LOTTA AF and assigns numbers 1-69 to the first buyers within your selected time range.
 
 ## Notes
 
 - **Helius API Key Required**: Already configured! The key is set in the server.
 - **Rate Limits**: The app includes built-in delays to prevent hitting API rate limits.
-- **Drawing Time**: Drawing lottery numbers can take a few minutes depending on the number of transactions. Be patient!
+- **Drawing Time**: Drawing drawing numbers can take a few minutes depending on the number of transactions. Be patient!
 - **Supported DEXes**: Tracks $LOTTA AF buys from Raydium, Jupiter, Pump.fun, and other major DEXes.
-- **Lottery Numbers**: Numbers 1-69 are assigned chronologically to the first 69 buyers in your time range.
+- **Drawing Numbers**: Numbers 1-69 are assigned chronologically to the first 69 buyers in your time range.
 - **Verification**: All results are verifiable on-chain. Click "View" to see any transaction on Solscan.
 - All times support multiple timezones for global accessibility
 
 ## Troubleshooting
 
-### Lottery Draw Issues
+### Drawing Draw Issues
 - **"Failed to analyze token"**: The Helius API key is already configured in the server
-- **No lottery winners found**: Try expanding the date range to include more trading activity
-- **Slow lottery draw**: This is normal if there are many $LOTTA AF transactions. The system checks each one.
+- **No drawing winners found**: Try expanding the date range to include more trading activity
+- **Slow drawing draw**: This is normal if there are many $LOTTA AF transactions. The system checks each one.
 - **Can't find my wallet**: Make sure you bought during the selected time range and your transaction went through
 
 ### General Issues
@@ -210,7 +210,7 @@ The lottery system automatically tracks all buys of $LOTTA AF and assigns number
 - Check that you have a stable internet connection
 - Check the browser console and server logs for detailed error messages
 - If Helius rate limits are hit, wait a few minutes and try again
-- All lottery results are verifiable on-chain via Solscan links
+- All drawing results are verifiable on-chain via Solscan links
 
 ## Future Enhancements
 

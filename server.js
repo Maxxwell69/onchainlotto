@@ -251,7 +251,7 @@ app.post('/api/admin/blocklist/add', (req, res) => {
     
     if (!blocklist.blockedWallets.includes(wallet)) {
       blocklist.blockedWallets.push(wallet);
-      blocklist.reason[wallet] = reason || 'Excluded from lottery';
+      blocklist.reason[wallet] = reason || 'Excluded from drawing';
       saveBlocklist(blocklist);
       console.log(`🚫 Added to blocklist: ${wallet}`);
     }
@@ -435,7 +435,7 @@ app.post('/api/analyze-token', async (req, res) => {
       formattedDate: new Date(trade.timestamp * 1000).toLocaleString('en-US', { timeZone: timezone })
     }));
 
-    console.log(`✅ Lottery complete! ${numberedTrades.length} winners with USD pricing`);
+    console.log(`✅ Drawing complete! ${numberedTrades.length} winners with USD pricing`);
 
     res.json({
       tokenAddress,
@@ -665,7 +665,7 @@ function parseSwapTransaction(txDetails, tokenAddress) {
       if (changes.tokenChange > 0) {
         // Check if wallet is blocked (liquidity pool, etc.)
         if (isWalletBlocked(wallet)) {
-          console.log(`🚫 Blocked wallet detected: ${wallet.slice(0, 8)} - Excluding from lottery`);
+          console.log(`🚫 Blocked wallet detected: ${wallet.slice(0, 8)} - Excluding from drawing`);
           continue;
         }
         

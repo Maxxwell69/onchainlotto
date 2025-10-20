@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto AF On Chain Lottery</title>
+    <title>Lotto AF On Chain Drawing</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎰</text></svg>">
     <style>
         * {
@@ -232,7 +232,7 @@
             align-items: center;
         }
 
-        .lottery-ball {
+        .drawing-ball {
             width: 70px;
             height: 70px;
             border-radius: 50%;
@@ -252,7 +252,7 @@
             animation: ballGlow 2s ease-in-out infinite;
         }
 
-        .lottery-ball::before {
+        .drawing-ball::before {
             content: '';
             position: absolute;
             top: 15%;
@@ -279,8 +279,8 @@
             }
         }
 
-        /* Lottery Popup Styles */
-        .lottery-popup {
+        /* Drawing Popup Styles */
+        .drawing-popup {
             position: fixed;
             top: 50%;
             left: 50%;
@@ -477,7 +477,7 @@
             text-align: center;
         }
 
-        .saved-lottery-item {
+        .saved-drawing-item {
             background: var(--bg-dark);
             border: 1px solid var(--primary-color);
             border-radius: 10px;
@@ -487,18 +487,18 @@
             transition: all 0.3s ease;
         }
 
-        .saved-lottery-item:hover {
+        .saved-drawing-item:hover {
             background: rgba(20, 241, 149, 0.1);
             transform: translateX(5px);
         }
 
-        .saved-lottery-date {
+        .saved-drawing-date {
             font-weight: 700;
             color: var(--primary-color);
             margin-bottom: 5px;
         }
 
-        .saved-lottery-info {
+        .saved-drawing-info {
             font-size: 0.9rem;
             color: var(--text-light);
         }
@@ -639,8 +639,8 @@
             </div>
         </div>
         
-        <h1>🔮 LOTTO AF ON CHAIN LOTTERY</h1>
-        <p class="subtitle">Find the first 69 buyers of $LOTTA AF and get your lottery ball number!</p>
+        <h1>🔮 LOTTO AF ON CHAIN DRAWING</h1>
+        <p class="subtitle">Find the first 69 buyers of $LOTTA AF and get your drawing ball number!</p>
 
         <div style="text-align: center; margin-bottom: 20px; display: flex; gap: 30px; justify-content: center;">
             <a href="scan.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 1.1rem;">
@@ -653,8 +653,8 @@
 
         <div class="input-section">
             <div class="info-box">
-                <strong>🔮 LOTTO AF LOTTERY:</strong> This lottery finds the first 69 buyers of $LOTTA AF token within your selected time range. 
-                Each buyer gets a beautiful lottery ball with their number (1-69) based on when they bought. Are you one of the lucky ones?
+                <strong>🔮 LOTTO AF DRAWING:</strong> This drawing finds the first 69 buyers of $LOTTA AF token within your selected time range. 
+                Each buyer gets a beautiful drawing ball with their number (1-69) based on when they bought. Are you one of the lucky ones?
             </div>
 
             <div class="form-group">
@@ -709,35 +709,35 @@
                 </div>
             </div>
 
-            <button class="btn" id="createLotteryBtn" onclick="createLottery()">
-                🔮 Create Lottery Draw
+            <button class="btn" id="createDrawingBtn" onclick="createDrawing()">
+                🔮 Create Drawing Draw
             </button>
         </div>
 
-        <!-- Lottery Created Section -->
-        <div class="input-section" id="lotteryCreatedSection" style="display: none;">
+        <!-- Drawing Created Section -->
+        <div class="input-section" id="drawingCreatedSection" style="display: none;">
             <div class="info-box" style="background: rgba(153, 69, 255, 0.1); border-color: var(--secondary-color);">
-                <strong>🔮 LOTTERY DRAW IS ACTIVE!</strong><br>
-                <span id="lotteryInfo"></span>
+                <strong>🔮 DRAWING DRAW IS ACTIVE!</strong><br>
+                <span id="drawingInfo"></span>
             </div>
             
             <div style="display: flex; gap: 15px; margin-top: 20px;">
-                <button class="btn" id="calculateBtn" onclick="calculateLottery()" style="flex: 1;">
-                    🎱 Draw Lottery Balls
+                <button class="btn" id="calculateBtn" onclick="calculateDrawing()" style="flex: 1;">
+                    🎱 Draw Drawing Balls
                 </button>
-                <button class="btn" id="refreshBtn" onclick="refreshLottery()" style="flex: 1; display: none; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));">
+                <button class="btn" id="refreshBtn" onclick="refreshDrawing()" style="flex: 1; display: none; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));">
                     🔄 Check for New Winners
                 </button>
             </div>
             
-            <button class="btn" id="newLotteryBtn" onclick="resetLottery()" style="margin-top: 15px; background: var(--bg-dark); border: 2px solid var(--primary-color); color: var(--primary-color);">
-                🔄 Create New Lottery Draw
+            <button class="btn" id="newDrawingBtn" onclick="resetDrawing()" style="margin-top: 15px; background: var(--bg-dark); border: 2px solid var(--primary-color); color: var(--primary-color);">
+                🔄 Create New Drawing Draw
             </button>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p id="loadingText">🔮 Drawing lottery balls...</p>
+            <p id="loadingText">🔮 Drawing drawing balls...</p>
             <button class="btn stop-btn" id="stopBtn" onclick="stopAnalysis()" style="display: none; margin-top: 15px; background: #ff4444; border: 2px solid #ff4444; color: white;">
                 🛑 Stop Analysis
             </button>
@@ -745,7 +745,7 @@
 
         <!-- Saved Lotteries Section -->
         <div class="saved-lotteries" id="savedLotteries">
-            <h3>📚 Saved Lottery Results</h3>
+            <h3>📚 Saved Drawing Results</h3>
             <div id="savedLotteriesList"></div>
         </div>
 
@@ -756,18 +756,18 @@
                     <div class="stat-value" id="totalBuys">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">🏆 Lottery Winners</div>
+                    <div class="stat-label">🏆 Drawing Winners</div>
                     <div class="stat-value" id="numberedTraders">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">📅 Lottery Period</div>
+                    <div class="stat-label">📅 Drawing Period</div>
                     <div class="stat-value" id="timeRange" style="font-size: 1.2rem;">-</div>
                 </div>
             </div>
 
             <div class="trades-container">
                 <h2 style="margin-bottom: 25px; color: var(--primary-color);">
-                    🔮 LOTTO AF LOTTERY BALLS (1-69)
+                    🔮 LOTTO AF DRAWING BALLS (1-69)
                 </h2>
                 <div id="tradesContainer"></div>
                 <div class="no-results" id="noResults" style="display: none;">
@@ -776,25 +776,25 @@
 
                 <div class="export-section">
                     <button class="export-btn" onclick="exportResults()">
-                        📥 Export Lottery Results
+                        📥 Export Drawing Results
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Lottery Results Popup -->
+    <!-- Drawing Results Popup -->
     <div class="popup-overlay" id="popupOverlay"></div>
-    <div class="lottery-popup" id="lotteryPopup">
+    <div class="drawing-popup" id="drawingPopup">
         <div class="popup-header">
-            <h2 class="popup-title">🎱 LOTTO AF LOTTERY RESULTS</h2>
+            <h2 class="popup-title">🎱 LOTTO AF DRAWING RESULTS</h2>
             <button class="popup-close" id="popupClose">×</button>
         </div>
         <div class="popup-content" id="popupContent">
             <div class="popup-stats" id="popupStats"></div>
             <div class="popup-actions">
-                <button class="popup-btn" onclick="saveLotteryResult()">
-                    💾 Save Lottery Result
+                <button class="popup-btn" onclick="saveDrawingResult()">
+                    💾 Save Drawing Result
                 </button>
                 <button class="popup-btn secondary" onclick="exportToCSV()">
                     📊 Export CSV

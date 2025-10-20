@@ -1,7 +1,7 @@
 {
   "name": "lotto-af-on-chain-lottery",
   "version": "1.0.0",
-  "description": "On-chain lottery system for LOTTA AF token on Solana blockchain",
+  "description": "On-chain drawing system for LOTTA AF token on Solana blockchain",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,7 +9,7 @@
   },
   "keywords": [
     "solana",
-    "lottery",
+    "drawing",
     "blockchain",
     "meme-coin",
     "lotta-af"

@@ -1,26 +1,26 @@
 let analysisResults = null;
-let lotterySettings = null;
+let drawingSettings = null;
 let isAnalyzing = false;
 let currentAbortController = null;
 
 // Storage functions
-function saveLotteryResult() {
-    if (!analysisResults || !lotterySettings) {
-        showNotification('No lottery results to save', 'error');
+function saveDrawingResult() {
+    if (!analysisResults || !drawingSettings) {
+        showNotification('No drawing results to save', 'error');
         return;
     }
 
-    const lotteryData = {
+    const drawingData = {
         id: Date.now(),
         timestamp: new Date().toISOString(),
-        settings: lotterySettings,
+        settings: drawingSettings,
         results: analysisResults,
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString()
     };
 
     const savedLotteries = JSON.parse(localStorage.getItem('lottoAfLotteries') || '[]');
-    savedLotteries.unshift(lotteryData); // Add to beginning
+    savedLotteries.unshift(drawingData); // Add to beginning
     
     // Keep only last 50 lotteries
     if (savedLotteries.length > 50) {
@@ -28,7 +28,7 @@ function saveLotteryResult() {
     }
     
     localStorage.setItem('lottoAfLotteries', JSON.stringify(savedLotteries));
-    showNotification('🎉 Lottery result saved successfully!', 'success');
+    showNotification('🎉 Drawing result saved successfully!', 'success');
     loadSavedLotteries();
 }
 
@@ -43,51 +43,51 @@ function loadSavedLotteries() {
     }
     
     savedSection.style.display = 'block';
-    container.innerHTML = savedLotteries.map(lottery => `
-        <div class="saved-lottery-item" onclick="loadSavedLottery('${lottery.id}')">
-            <div class="saved-lottery-date">🎱 ${lottery.date} at ${lottery.time}</div>
-            <div class="saved-lottery-info">
-                ${lottery.results.numberedBuys.length} winners • 
-                ${lottery.settings.minPurchaseUSD}$ minimum • 
-                ${lottery.settings.timezone} timezone
+    container.innerHTML = savedLotteries.map(drawing => `
+        <div class="saved-drawing-item" onclick="loadSavedDrawing('${drawing.id}')">
+            <div class="saved-drawing-date">🎱 ${drawing.date} at ${drawing.time}</div>
+            <div class="saved-drawing-info">
+                ${drawing.results.numberedBuys.length} winners • 
+                ${drawing.settings.minPurchaseUSD}$ minimum • 
+                ${drawing.settings.timezone} timezone
             </div>
         </div>
     `).join('');
 }
 
-function loadSavedLottery(id) {
+function loadSavedDrawing(id) {
     const savedLotteries = JSON.parse(localStorage.getItem('lottoAfLotteries') || '[]');
-    const lottery = savedLotteries.find(l => l.id.toString() === id);
+    const drawing = savedLotteries.find(l => l.id.toString() === id);
     
-    if (!lottery) {
-        showNotification('Lottery not found', 'error');
+    if (!drawing) {
+        showNotification('Drawing not found', 'error');
         return;
     }
     
-    // Load the lottery data
-    lotterySettings = lottery.settings;
-    analysisResults = lottery.results;
+    // Load the drawing data
+    drawingSettings = drawing.settings;
+    analysisResults = drawing.results;
     
     // Display in popup
-    displayLotteryResults(lottery.results, lottery.settings.timezone);
-    showLotteryPopup();
+    displayDrawingResults(drawing.results, drawing.settings.timezone);
+    showDrawingPopup();
     
-    showNotification('🎱 Loaded saved lottery result', 'success');
+    showNotification('🎱 Loaded saved drawing result', 'success');
 }
 
-function showLotteryPopup() {
+function showDrawingPopup() {
     document.getElementById('popupOverlay').style.display = 'block';
-    document.getElementById('lotteryPopup').style.display = 'flex';
+    document.getElementById('drawingPopup').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
-function hideLotteryPopup() {
+function hideDrawingPopup() {
     document.getElementById('popupOverlay').style.display = 'none';
-    document.getElementById('lotteryPopup').style.display = 'none';
+    document.getElementById('drawingPopup').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-function displayLotteryResults(data, timezone) {
+function displayDrawingResults(data, timezone) {
     // Display stats in popup
     const statsContainer = document.getElementById('popupStats');
     statsContainer.innerHTML = `
@@ -113,7 +113,7 @@ function displayLotteryResults(data, timezone) {
     const tradesContainer = document.getElementById('popupTradesContainer');
     tradesContainer.innerHTML = `
         <h3 style="color: var(--primary-color); margin-bottom: 20px; text-align: center;">
-            🎱 LOTTERY BALLS (1-${data.numberedBuys.length})
+            🎱 DRAWING BALLS (1-${data.numberedBuys.length})
         </h3>
         <div style="display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));">
             ${data.numberedBuys.map(trade => createTradeCard(trade, timezone)).join('')}
@@ -123,7 +123,7 @@ function displayLotteryResults(data, timezone) {
 
 function openInNewWindow() {
     if (!analysisResults) {
-        showNotification('No lottery results to open', 'error');
+        showNotification('No drawing results to open', 'error');
         return;
     }
     
@@ -132,7 +132,7 @@ function openInNewWindow() {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>🎱 LOTTO AF Lottery Results</title>
+            <title>🎱 LOTTO AF Drawing Results</title>
             <style>
                 body { 
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -147,12 +147,12 @@ function openInNewWindow() {
                 .stat-card { background: linear-gradient(135deg, #14f195, #9945ff); padding: 20px; border-radius: 15px; text-align: center; color: #000; }
                 .trades { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
                 .trade-card { background: #1a1a1a; border: 1px solid #14f195; border-radius: 10px; padding: 15px; }
-                .lottery-ball { width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff, #14f195 45%, #9945ff); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: 900; color: #000; box-shadow: 0 4px 15px rgba(20, 241, 149, 0.5); }
+                .drawing-ball { width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff, #14f195 45%, #9945ff); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: 900; color: #000; box-shadow: 0 4px 15px rgba(20, 241, 149, 0.5); }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>🎱 LOTTO AF LOTTERY RESULTS</h1>
+                <h1>🎱 LOTTO AF DRAWING RESULTS</h1>
                 <div class="stats">
                     <div class="stat-card">
                         <div style="font-size: 0.9rem; margin-bottom: 5px;">🎫 Total Winners</div>
@@ -171,7 +171,7 @@ function openInNewWindow() {
                     ${analysisResults.numberedBuys.map(trade => `
                         <div class="trade-card">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div class="lottery-ball">${trade.number}</div>
+                                <div class="drawing-ball">${trade.number}</div>
                                 <div style="flex: 1;">
                                     <div style="font-weight: 700; color: #14f195; margin-bottom: 5px;">🏆 ${trade.wallet.substring(0, 8)}...${trade.wallet.substring(trade.wallet.length - 8)}</div>
                                     <div style="font-size: 0.9rem; color: #cccccc;">
@@ -201,7 +201,7 @@ function stopAnalysis() {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('stopBtn').style.display = 'none';
     
-    showNotification('🛑 Lottery analysis stopped', 'info');
+    showNotification('🛑 Drawing analysis stopped', 'info');
 }
 
 // Set default dates (last 24 hours)
@@ -213,8 +213,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startDate').value = formatDateForInput(yesterday);
     
     // Initialize popup event listeners
-    document.getElementById('popupClose').addEventListener('click', hideLotteryPopup);
-    document.getElementById('popupOverlay').addEventListener('click', hideLotteryPopup);
+    document.getElementById('popupClose').addEventListener('click', hideDrawingPopup);
+    document.getElementById('popupOverlay').addEventListener('click', hideDrawingPopup);
     
     // Load saved lotteries
     loadSavedLotteries();
@@ -229,8 +229,8 @@ function formatDateForInput(date) {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-// Step 1: Create Lottery
-function createLottery() {
+// Step 1: Create Drawing
+function createDrawing() {
     const tokenAddress = document.getElementById('tokenAddress').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -253,8 +253,8 @@ function createLottery() {
         return;
     }
 
-    // Store lottery settings
-    lotterySettings = {
+    // Store drawing settings
+    drawingSettings = {
         tokenAddress,
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
@@ -271,17 +271,17 @@ function createLottery() {
         ${minPrice ? `<strong>Min Purchase:</strong> $${minPrice} USD<br>` : ''}
         <strong>Status:</strong> <span style="color: var(--success);">● ACTIVE</span> - Waiting for 69 buyers
     `;
-    document.getElementById('lotteryInfo').innerHTML = infoText;
-    document.getElementById('lotteryCreatedSection').style.display = 'block';
-    document.getElementById('createLotteryBtn').disabled = true;
+    document.getElementById('drawingInfo').innerHTML = infoText;
+    document.getElementById('drawingCreatedSection').style.display = 'block';
+    document.getElementById('createDrawingBtn').disabled = true;
 
-    showNotification('🔮 Lottery created! Now click "Draw Lottery Balls"', 'success');
+    showNotification('🔮 Drawing created! Now click "Draw Drawing Balls"', 'success');
 }
 
 // Step 2: Calculate Current Results
-async function calculateLottery() {
-    if (!lotterySettings) {
-        showNotification('Please create a lottery first', 'error');
+async function calculateDrawing() {
+    if (!drawingSettings) {
+        showNotification('Please create a drawing first', 'error');
         return;
     }
 
@@ -290,7 +290,7 @@ async function calculateLottery() {
     isAnalyzing = true;
 
     document.getElementById('loading').style.display = 'block';
-    document.getElementById('loadingText').textContent = '🔮 Drawing lottery balls... Finding winners!';
+    document.getElementById('loadingText').textContent = '🔮 Drawing drawing balls... Finding winners!';
     document.getElementById('resultsSection').style.display = 'none';
     document.getElementById('calculateBtn').disabled = true;
     document.getElementById('stopBtn').style.display = 'block';
@@ -301,7 +301,7 @@ async function calculateLottery() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(lotterySettings),
+            body: JSON.stringify(drawingSettings),
             signal: currentAbortController.signal
         });
 
@@ -312,30 +312,30 @@ async function calculateLottery() {
 
         const data = await response.json();
         analysisResults = data;
-        displayResults(data, lotterySettings.timezone);
+        displayResults(data, drawingSettings.timezone);
 
         // Show refresh button if we don't have 69 buyers yet and end date hasn't passed
-        const endDate = new Date(lotterySettings.endDate);
+        const endDate = new Date(drawingSettings.endDate);
         const now = new Date();
         
         if (data.numberedBuys.length < 69 && now < endDate) {
             document.getElementById('refreshBtn').style.display = 'block';
-            showNotification(`🎱 Drew ${data.numberedBuys.length}/69 lottery balls. Click refresh for more!`, 'success');
+            showNotification(`🎱 Drew ${data.numberedBuys.length}/69 drawing balls. Click refresh for more!`, 'success');
         } else if (data.numberedBuys.length >= 69) {
             document.getElementById('refreshBtn').style.display = 'none';
-            showNotification(`🎉 ALL 69 LOTTERY BALLS DRAWN! Winners complete!`, 'success');
+            showNotification(`🎉 ALL 69 DRAWING BALLS DRAWN! Winners complete!`, 'success');
         } else {
             document.getElementById('refreshBtn').style.display = 'none';
-            showNotification(`⏰ Time ended. Drew ${data.numberedBuys.length} lottery balls.`, 'success');
+            showNotification(`⏰ Time ended. Drew ${data.numberedBuys.length} drawing balls.`, 'success');
         }
 
         // Show results in popup
-        displayLotteryResults(data, lotterySettings.timezone);
-        showLotteryPopup();
+        displayDrawingResults(data, drawingSettings.timezone);
+        showDrawingPopup();
 
     } catch (error) {
         if (error.name === 'AbortError') {
-            showNotification('🛑 Lottery analysis cancelled', 'info');
+            showNotification('🛑 Drawing analysis cancelled', 'info');
             return;
         }
         console.error('Error:', error);
@@ -350,23 +350,23 @@ async function calculateLottery() {
 }
 
 // Step 3: Refresh to check for more buyers
-async function refreshLottery() {
-    if (!lotterySettings) {
-        showNotification('Please create a lottery first', 'error');
+async function refreshDrawing() {
+    if (!drawingSettings) {
+        showNotification('Please create a drawing first', 'error');
         return;
     }
 
     // Update end date to now to capture new transactions
     const now = new Date();
-    const originalEndDate = new Date(lotterySettings.endDate);
+    const originalEndDate = new Date(drawingSettings.endDate);
     
     if (now > originalEndDate) {
-        showNotification('Lottery time period has ended', 'error');
+        showNotification('Drawing time period has ended', 'error');
         return;
     }
 
     document.getElementById('loading').style.display = 'block';
-    document.getElementById('loadingText').textContent = '🔄 Checking for new lottery balls...';
+    document.getElementById('loadingText').textContent = '🔄 Checking for new drawing balls...';
     document.getElementById('refreshBtn').disabled = true;
 
     try {
@@ -375,7 +375,7 @@ async function refreshLottery() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(lotterySettings)
+            body: JSON.stringify(drawingSettings)
         });
 
         if (!response.ok) {
@@ -386,13 +386,13 @@ async function refreshLottery() {
         const data = await response.json();
         const previousCount = analysisResults ? analysisResults.numberedBuys.length : 0;
         analysisResults = data;
-        displayResults(data, lotterySettings.timezone);
+        displayResults(data, drawingSettings.timezone);
 
         const newBuyers = data.numberedBuys.length - previousCount;
 
         if (data.numberedBuys.length >= 69) {
             document.getElementById('refreshBtn').style.display = 'none';
-            showNotification(`🎉 ALL 69 LOTTERY BALLS DRAWN! (+${newBuyers} new)`, 'success');
+            showNotification(`🎉 ALL 69 DRAWING BALLS DRAWN! (+${newBuyers} new)`, 'success');
         } else if (newBuyers > 0) {
             showNotification(`🎱 Drew ${newBuyers} new balls! Total: ${data.numberedBuys.length}/69`, 'success');
         } else {
@@ -444,7 +444,7 @@ function createTradeCard(trade, timezone) {
     return `
         <div class="trade-card">
             <div class="trade-number">
-                <div class="lottery-ball">${number}</div>
+                <div class="drawing-ball">${number}</div>
             </div>
             <div class="trade-info">
                 <div class="trade-wallet" title="${wallet}">
@@ -521,7 +521,7 @@ function exportResults() {
 
     // CSV Headers
     const headers = [
-        'Lottery Number',
+        'Drawing Number',
         'Winner Wallet Address',
         'LOTTA AF Tokens',
         'USD Spent',
@@ -559,14 +559,14 @@ function exportResults() {
     const url = URL.createObjectURL(blob);
 
     link.setAttribute('href', url);
-    link.setAttribute('download', `LOTTA_AF_Lottery_Results_${Date.now()}.csv`);
+    link.setAttribute('download', `LOTTA_AF_Drawing_Results_${Date.now()}.csv`);
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    showNotification(`🎰 Exported ${numberedBuys.length} lottery winners to CSV!`, 'success');
+    showNotification(`🎰 Exported ${numberedBuys.length} drawing winners to CSV!`, 'success');
 }
 
 function showNotification(message, type = 'success') {
@@ -596,15 +596,15 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Reset and create new lottery
-function resetLottery() {
-    lotterySettings = null;
+// Reset and create new drawing
+function resetDrawing() {
+    drawingSettings = null;
     analysisResults = null;
     
     // Reset UI
-    document.getElementById('lotteryCreatedSection').style.display = 'none';
+    document.getElementById('drawingCreatedSection').style.display = 'none';
     document.getElementById('resultsSection').style.display = 'none';
-    document.getElementById('createLotteryBtn').disabled = false;
+    document.getElementById('createDrawingBtn').disabled = false;
     document.getElementById('refreshBtn').style.display = 'none';
     
     // Reset dates to default
@@ -613,13 +613,13 @@ function resetLottery() {
     document.getElementById('endDate').value = formatDateForInput(now);
     document.getElementById('startDate').value = formatDateForInput(yesterday);
     
-    showNotification('Ready to create a new lottery!', 'success');
+    showNotification('Ready to create a new drawing!', 'success');
 }
 
-// Allow Enter key to create lottery
+// Allow Enter key to create drawing
 document.getElementById('tokenAddress').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        createLottery();
+        createDrawing();
     }
 });
 

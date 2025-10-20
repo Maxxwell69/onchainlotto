@@ -1,4 +1,4 @@
-# 🚀 LOTTO AF Lottery Deployment Guide
+# 🚀 LOTTO AF Drawing Deployment Guide
 
 ## Quick Start: GitHub + Railway Deployment
 
@@ -16,8 +16,8 @@ Your project is fully committed to Git with 2 commits:
 1. Go to [GitHub.com](https://github.com) and login
 2. Click the **"+"** in top right → **"New repository"**
 3. Repository settings:
-   - **Name**: `lotto-af-lottery` (or your preferred name)
-   - **Description**: "On-chain lottery system for LOTTA AF token on Solana"
+   - **Name**: `lotto-af-drawing` (or your preferred name)
+   - **Description**: "On-chain drawing system for LOTTA AF token on Solana"
    - **Visibility**: Public or Private (your choice)
    - **DO NOT** initialize with README, .gitignore, or license (we already have these)
 4. Click **"Create repository"**
@@ -28,7 +28,7 @@ GitHub will show you commands. Run these in your terminal:
 
 ```bash
 # Add your GitHub repository URL (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/lotto-af-lottery.git
+git remote add origin https://github.com/YOUR_USERNAME/lotto-af-drawing.git
 
 # Push your code
 git branch -M main
@@ -37,7 +37,7 @@ git push -u origin main
 
 Or if you want to keep the master branch:
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/lotto-af-lottery.git
+git remote add origin https://github.com/YOUR_USERNAME/lotto-af-drawing.git
 git push -u origin master
 ```
 
@@ -52,7 +52,7 @@ git push -u origin master
 3. **Create New Project**:
    - Click **"New Project"**
    - Select **"Deploy from GitHub repo"**
-   - Find and select `lotto-af-lottery`
+   - Find and select `lotto-af-drawing`
 
 4. **Railway Auto-Detection**:
    - Railway will detect Node.js
@@ -78,7 +78,7 @@ git push -u origin master
    - Go to **"Settings"** tab
    - Under **"Domains"**, click **"Generate Domain"**
    - Your app will be live at something like:
-     `https://lotto-af-lottery-production.up.railway.app`
+     `https://lotto-af-drawing-production.up.railway.app`
 
 ---
 
@@ -127,11 +127,11 @@ git push -u origin master
 
 After deployment, test these features:
 
-### Main Lottery Page (`/`)
-- [ ] Create lottery draw with date/time range
-- [ ] Draw lottery balls and see results
-- [ ] Save lottery results to localStorage
-- [ ] Load saved lottery results
+### Main Drawing Page (`/`)
+- [ ] Create drawing draw with date/time range
+- [ ] Draw drawing balls and see results
+- [ ] Save drawing results to localStorage
+- [ ] Load saved drawing results
 - [ ] Export results to CSV
 - [ ] Open results in new window
 - [ ] Stop button works during analysis
@@ -145,7 +145,7 @@ After deployment, test these features:
 ### Diagnostic Scan (`/scan.html`)
 - [ ] Scan all buys without filters
 - [ ] View detailed transaction data
-- [ ] Compare with main lottery results
+- [ ] Compare with main drawing results
 
 ---
 
@@ -180,7 +180,7 @@ git push
 
 ### Performance:
 - Railway servers are fast and globally distributed
-- Your lottery analysis will be as fast as Helius/CoinGecko APIs allow
+- Your drawing analysis will be as fast as Helius/CoinGecko APIs allow
 - Consider caching strategies for heavy usage
 
 ---
@@ -193,7 +193,7 @@ git push
 3. Ensure `HELIUS_API_KEY` environment variable is set
 4. Check that `server.js` uses `process.env.PORT`
 
-### If lottery doesn't find buyers:
+### If drawing doesn't find buyers:
 1. Check Helius API key is valid
 2. Verify date ranges in your timezone
 3. Lower the minimum USD amount filter
@@ -221,13 +221,13 @@ git push
 ### Database Integration:
 If you want persistent storage beyond localStorage:
 - Add PostgreSQL to Railway project
-- Store lottery results in database
+- Store drawing results in database
 - Track user participation history
 
 ### Advanced Features:
-- Email notifications for lottery winners
+- Email notifications for drawing winners
 - Discord/Telegram bot integration
-- Automatic scheduled lottery draws
+- Automatic scheduled drawing draws
 - Winner verification system
 - Prize distribution tracking
 
@@ -239,7 +239,7 @@ Everything is configured and ready to deploy. Just:
 1. Create GitHub repo
 2. Push code
 3. Deploy on Railway
-4. Share your lottery URL!
+4. Share your drawing URL!
 
-**Good luck with your LOTTO AF lottery! 🎱🚀**
+**Good luck with your LOTTO AF drawing! 🎱🚀**
 
