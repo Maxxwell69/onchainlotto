@@ -342,7 +342,7 @@ app.post('/api/scan-all-buys', async (req, res) => {
         
         const txDetails = await getEnhancedTransaction(sig);
         if (txDetails && (txDetails.type === 'SWAP' || txDetails.type === 'PUMPFUN')) {
-          const trade = parseSwapTransaction(txDetails, tokenAddress);
+          const trade = await parseSwapTransaction(txDetails, tokenAddress);
           if (trade && trade.direction === 'BUY') {
             buyTrades.push(trade);
           }
@@ -417,7 +417,7 @@ app.post('/api/analyze-token', async (req, res) => {
         
         const txDetails = await getEnhancedTransaction(sig);
         if (txDetails && (txDetails.type === 'SWAP' || txDetails.type === 'PUMPFUN')) {
-          const trade = parseSwapTransaction(txDetails, tokenAddress);
+          const trade = await parseSwapTransaction(txDetails, tokenAddress);
           if (trade && trade.direction === 'BUY') {
             buyTrades.push(trade);
           }
@@ -638,7 +638,7 @@ function parseEnhancedTx(tx) {
 }
 
 // Parse swap transaction to determine buy/sell and amount
-function parseSwapTransaction(txDetails, tokenAddress) {
+async function parseSwapTransaction(txDetails, tokenAddress) {
   try {
     const { meta, blockTime, signature, accounts, type } = txDetails;
     
@@ -725,7 +725,8 @@ function parseSwapTransaction(txDetails, tokenAddress) {
     for (const [wallet, changes] of accountChanges.entries()) {
       if (changes.tokenChange > 0) {
         // Check if wallet is blocked (liquidity pool, etc.)
-        if (isWalletBlocked(wallet)) {
+        const blocked = await isWalletBlocked(wallet);
+        if (blocked) {
           console.log(`🚫 Blocked wallet detected: ${wallet.slice(0, 8)} - Excluding from drawing`);
           continue;
         }
