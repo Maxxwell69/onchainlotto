@@ -3,8 +3,8 @@ let drawingSettings = null;
 let isAnalyzing = false;
 let currentAbortController = null;
 
-// Storage functions
-function saveDrawingResult() {
+// Storage functions - Save to both database and localStorage
+async function saveDrawingResult() {
     if (!analysisResults || !drawingSettings) {
         showNotification('No drawing results to save', 'error');
         return;
@@ -19,21 +19,55 @@ function saveDrawingResult() {
         time: new Date().toLocaleTimeString()
     };
 
+    try {
+        // Save to database (if configured)
+        const dbResponse = await fetch('/api/drawing/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(drawingData)
+        });
+
+        if (dbResponse.ok) {
+            showNotification('🎉 Drawing saved to database!', 'success');
+        }
+    } catch (error) {
+        console.log('Database save failed, using localStorage only:', error);
+    }
+
+    // Also save to localStorage as backup
     const savedLotteries = JSON.parse(localStorage.getItem('lottoAfLotteries') || '[]');
-    savedLotteries.unshift(drawingData); // Add to beginning
+    savedLotteries.unshift(drawingData);
     
-    // Keep only last 50 lotteries
     if (savedLotteries.length > 50) {
         savedLotteries.splice(50);
     }
     
     localStorage.setItem('lottoAfLotteries', JSON.stringify(savedLotteries));
-    showNotification('🎉 Drawing result saved successfully!', 'success');
     loadSavedLotteries();
 }
 
-function loadSavedLotteries() {
-    const savedLotteries = JSON.parse(localStorage.getItem('lottoAfLotteries') || '[]');
+async function loadSavedLotteries() {
+    let savedLotteries = [];
+    
+    // Try to load from database first
+    try {
+        const dbResponse = await fetch('/api/drawing/results?limit=50');
+        if (dbResponse.ok) {
+            const dbResults = await dbResponse.json();
+            if (dbResults && dbResults.length > 0) {
+                savedLotteries = dbResults;
+                console.log(`📊 Loaded ${dbResults.length} drawings from database`);
+            }
+        }
+    } catch (error) {
+        console.log('Database fetch failed, using localStorage:', error);
+    }
+    
+    // Fallback to localStorage if database is empty or fails
+    if (savedLotteries.length === 0) {
+        savedLotteries = JSON.parse(localStorage.getItem('lottoAfLotteries') || '[]');
+    }
+    
     const container = document.getElementById('savedLotteriesList');
     const savedSection = document.getElementById('savedLotteries');
     
@@ -43,16 +77,24 @@ function loadSavedLotteries() {
     }
     
     savedSection.style.display = 'block';
-    container.innerHTML = savedLotteries.map(drawing => `
-        <div class="saved-drawing-item" onclick="loadSavedDrawing('${drawing.id}')">
-            <div class="saved-drawing-date">🎱 ${drawing.date} at ${drawing.time}</div>
-            <div class="saved-drawing-info">
-                ${drawing.results.numberedBuys.length} winners • 
-                ${drawing.settings.minPurchaseUSD}$ minimum • 
-                ${drawing.settings.timezone} timezone
+    container.innerHTML = savedLotteries.map(drawing => {
+        const tokenAddr = drawing.settings.tokenAddress ? 
+            `${drawing.settings.tokenAddress.slice(0, 6)}...${drawing.settings.tokenAddress.slice(-6)}` : 
+            'Unknown Token';
+        const minPrice = drawing.settings.minPrice || drawing.settings.minPurchaseUSD || 0;
+        
+        return `
+            <div class="saved-drawing-item" onclick="loadSavedDrawing('${drawing.id}')">
+                <div class="saved-drawing-date">🎱 ${drawing.date} at ${drawing.time}</div>
+                <div class="saved-drawing-info">
+                    🪙 ${tokenAddr} • 
+                    ${drawing.results.numberedBuys.length} winners • 
+                    $${minPrice} minimum • 
+                    ${drawing.settings.timezone} TZ
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function loadSavedDrawing(id) {
@@ -72,7 +114,10 @@ function loadSavedDrawing(id) {
     displayDrawingResults(drawing.results, drawing.settings.timezone);
     showDrawingPopup();
     
-    showNotification('🎱 Loaded saved drawing result', 'success');
+    const tokenAddr = drawingSettings.tokenAddress ? 
+        `${drawingSettings.tokenAddress.slice(0, 8)}...${drawingSettings.tokenAddress.slice(-8)}` : 
+        'Unknown';
+    showNotification(`🎱 Loaded drawing for ${tokenAddr}`, 'success');
 }
 
 function showDrawingPopup() {
@@ -88,6 +133,11 @@ function hideDrawingPopup() {
 }
 
 function displayDrawingResults(data, timezone) {
+    // Calculate stats
+    const totalVolume = data.numberedBuys.reduce((sum, trade) => sum + trade.solAmount, 0);
+    const totalUSD = data.numberedBuys.reduce((sum, trade) => sum + (trade.usdAmount || 0), 0);
+    const uniqueBuyers = new Set(data.numberedBuys.map(t => t.wallet)).size;
+    
     // Display stats in popup
     const statsContainer = document.getElementById('popupStats');
     statsContainer.innerHTML = `
@@ -97,23 +147,34 @@ function displayDrawingResults(data, timezone) {
         </div>
         <div class="popup-stat-card">
             <div class="popup-stat-label">💰 Total Volume</div>
-            <div class="popup-stat-value">${data.totalVolume.toFixed(2)} SOL</div>
+            <div class="popup-stat-value">${totalVolume.toFixed(2)} SOL</div>
         </div>
         <div class="popup-stat-card">
             <div class="popup-stat-label">💵 Total USD</div>
-            <div class="popup-stat-value">$${data.totalUSD.toFixed(2)}</div>
+            <div class="popup-stat-value">$${totalUSD.toFixed(2)}</div>
         </div>
         <div class="popup-stat-card">
             <div class="popup-stat-label">📊 Unique Buyers</div>
-            <div class="popup-stat-value">${data.uniqueBuyers}</div>
+            <div class="popup-stat-value">${uniqueBuyers}</div>
         </div>
     `;
+    
+    // Display token address
+    const tokenInfo = drawingSettings ? `
+        <div style="background: rgba(20, 241, 149, 0.1); border: 1px solid var(--primary-color); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;">
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 5px;">🪙 Token Contract Address</div>
+            <div style="font-family: monospace; color: var(--primary-color); font-size: 0.95rem; word-break: break-all;">
+                ${drawingSettings.tokenAddress}
+            </div>
+        </div>
+    ` : '';
     
     // Display trades in popup
     const tradesContainer = document.getElementById('popupTradesContainer');
     tradesContainer.innerHTML = `
+        ${tokenInfo}
         <h3 style="color: var(--primary-color); margin-bottom: 20px; text-align: center;">
-            🎱 DRAWING BALLS (1-${data.numberedBuys.length})
+            🎱 LOTTERY BALLS (1-${data.numberedBuys.length})
         </h3>
         <div style="display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));">
             ${data.numberedBuys.map(trade => createTradeCard(trade, timezone)).join('')}
@@ -127,12 +188,16 @@ function openInNewWindow() {
         return;
     }
     
+    const totalVolume = analysisResults.numberedBuys.reduce((sum, trade) => sum + trade.solAmount, 0);
+    const totalUSD = analysisResults.numberedBuys.reduce((sum, trade) => sum + (trade.usdAmount || 0), 0);
+    const tokenAddress = drawingSettings ? drawingSettings.tokenAddress : 'Unknown';
+    
     const newWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
     newWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-            <title>🎱 LOTTO AF Drawing Results</title>
+            <title>🎱 Lottery Drawing Results</title>
             <style>
                 body { 
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -142,17 +207,25 @@ function openInNewWindow() {
                     padding: 20px;
                 }
                 .container { max-width: 1200px; margin: 0 auto; }
-                h1 { color: #14f195; text-align: center; margin-bottom: 30px; }
+                h1 { color: #14f195; text-align: center; margin-bottom: 10px; }
+                .token-info { background: rgba(20, 241, 149, 0.1); border: 1px solid #14f195; border-radius: 10px; padding: 15px; margin-bottom: 30px; text-align: center; }
+                .token-label { color: #8b949e; font-size: 0.9rem; margin-bottom: 5px; }
+                .token-address { font-family: monospace; color: #14f195; font-size: 0.9rem; word-break: break-all; }
                 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
                 .stat-card { background: linear-gradient(135deg, #14f195, #9945ff); padding: 20px; border-radius: 15px; text-align: center; color: #000; }
                 .trades { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
                 .trade-card { background: #1a1a1a; border: 1px solid #14f195; border-radius: 10px; padding: 15px; }
                 .drawing-ball { width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff, #14f195 45%, #9945ff); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: 900; color: #000; box-shadow: 0 4px 15px rgba(20, 241, 149, 0.5); }
+                @media print { body { background: white; color: black; } }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>🎱 LOTTO AF DRAWING RESULTS</h1>
+                <h1>🎱 LOTTERY DRAWING RESULTS</h1>
+                <div class="token-info">
+                    <div class="token-label">🪙 Token Contract Address</div>
+                    <div class="token-address">${tokenAddress}</div>
+                </div>
                 <div class="stats">
                     <div class="stat-card">
                         <div style="font-size: 0.9rem; margin-bottom: 5px;">🎫 Total Winners</div>
@@ -160,11 +233,11 @@ function openInNewWindow() {
                     </div>
                     <div class="stat-card">
                         <div style="font-size: 0.9rem; margin-bottom: 5px;">💰 Total Volume</div>
-                        <div style="font-size: 1.8rem; font-weight: 900;">${analysisResults.totalVolume.toFixed(2)} SOL</div>
+                        <div style="font-size: 1.8rem; font-weight: 900;">${totalVolume.toFixed(2)} SOL</div>
                     </div>
                     <div class="stat-card">
                         <div style="font-size: 0.9rem; margin-bottom: 5px;">💵 Total USD</div>
-                        <div style="font-size: 1.8rem; font-weight: 900;">$${analysisResults.totalUSD.toFixed(2)}</div>
+                        <div style="font-size: 1.8rem; font-weight: 900;">$${totalUSD.toFixed(2)}</div>
                     </div>
                 </div>
                 <div class="trades">
@@ -177,7 +250,7 @@ function openInNewWindow() {
                                     <div style="font-size: 0.9rem; color: #cccccc;">
                                         💰 Spent: ${trade.solAmount.toFixed(4)} SOL ($${trade.usdAmount.toFixed(2)})<br>
                                         🪙 Bought: ${trade.tokenAmount.toLocaleString()} tokens<br>
-                                        📅 ${new Date(trade.timestamp).toLocaleString()}
+                                        📅 ${new Date(trade.timestamp * 1000).toLocaleString()}
                                     </div>
                                 </div>
                             </div>
@@ -189,6 +262,11 @@ function openInNewWindow() {
         </html>
     `);
     newWindow.document.close();
+}
+
+function exportToCSV() {
+    // Just call the main export function
+    exportResults();
 }
 
 function stopAnalysis() {
@@ -452,7 +530,7 @@ function createTradeCard(trade, timezone) {
                 </div>
                 <div class="trade-details">
                     <div class="trade-detail-item">
-                        <strong>$LOTTA AF:</strong> ${formatNumber(tokenAmount)}
+                        <strong>🪙 Tokens Bought:</strong> ${formatNumber(tokenAmount)}
                     </div>
                     <div class="trade-detail-item">
                         <strong>💵 USD Spent:</strong> $${usdAmount ? usdAmount.toFixed(2) : 'N/A'}
@@ -518,12 +596,13 @@ function exportResults() {
     }
 
     const { numberedBuys, tokenAddress } = analysisResults;
+    const tokenAddr = tokenAddress || (drawingSettings ? drawingSettings.tokenAddress : 'Unknown');
 
     // CSV Headers
     const headers = [
         'Drawing Number',
         'Winner Wallet Address',
-        'LOTTA AF Tokens',
+        'Tokens Bought',
         'USD Spent',
         'SOL Spent',
         'SOL Price (USD)',
@@ -547,8 +626,10 @@ function exportResults() {
         `https://solscan.io/tx/${trade.signature}`
     ]);
 
-    // Create CSV content
+    // Create CSV content with token address in first line
     const csvContent = [
+        `Token Address: ${tokenAddr}`,
+        '',
         headers.join(','),
         ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n');
@@ -559,7 +640,7 @@ function exportResults() {
     const url = URL.createObjectURL(blob);
 
     link.setAttribute('href', url);
-    link.setAttribute('download', `LOTTA_AF_Drawing_Results_${Date.now()}.csv`);
+    link.setAttribute('download', `Lottery_Drawing_Results_${Date.now()}.csv`);
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);

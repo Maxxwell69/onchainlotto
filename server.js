@@ -5,6 +5,9 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+// Import database functions
+const db = require('./db');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -32,33 +35,44 @@ const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 // Cache for SOL prices to avoid repeated API calls
 const solPriceCache = new Map();
 
-// Blocklist management
+// Blocklist management (with database fallback to file system)
 const BLOCKLIST_FILE = path.join(__dirname, 'blocklist.json');
+const USE_DATABASE = !!process.env.DATABASE_URL;
 
-function loadBlocklist() {
-  try {
-    const data = fs.readFileSync(BLOCKLIST_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.log('Creating new blocklist file...');
-    const defaultBlocklist = {
-      blockedWallets: ["HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC"],
-      reason: {
-        "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": "Liquidity Pool - High frequency trading account"
-      }
-    };
-    fs.writeFileSync(BLOCKLIST_FILE, JSON.stringify(defaultBlocklist, null, 2));
-    return defaultBlocklist;
+async function loadBlocklist() {
+  if (USE_DATABASE) {
+    return await db.getBlocklist();
+  } else {
+    try {
+      const data = fs.readFileSync(BLOCKLIST_FILE, 'utf8');
+      return JSON.parse(data);
+    } catch (error) {
+      console.log('Creating new blocklist file...');
+      const defaultBlocklist = {
+        blockedWallets: ["HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC"],
+        reason: {
+          "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": "Liquidity Pool - High frequency trading account"
+        }
+      };
+      fs.writeFileSync(BLOCKLIST_FILE, JSON.stringify(defaultBlocklist, null, 2));
+      return defaultBlocklist;
+    }
   }
 }
 
-function saveBlocklist(blocklist) {
-  fs.writeFileSync(BLOCKLIST_FILE, JSON.stringify(blocklist, null, 2));
+async function saveBlocklist(blocklist) {
+  if (!USE_DATABASE) {
+    fs.writeFileSync(BLOCKLIST_FILE, JSON.stringify(blocklist, null, 2));
+  }
 }
 
-function isWalletBlocked(wallet) {
-  const blocklist = loadBlocklist();
-  return blocklist.blockedWallets.includes(wallet);
+async function isWalletBlocked(wallet) {
+  if (USE_DATABASE) {
+    return await db.isWalletBlocked(wallet);
+  } else {
+    const blocklist = await loadBlocklist();
+    return blocklist.blockedWallets.includes(wallet);
+  }
 }
 
 // Get SOL price in USD at a specific timestamp
@@ -230,16 +244,16 @@ app.get('/api/transaction/:signature', async (req, res) => {
 });
 
 // Admin endpoints for blocklist management
-app.get('/api/admin/blocklist', (req, res) => {
+app.get('/api/admin/blocklist', async (req, res) => {
   try {
-    const blocklist = loadBlocklist();
+    const blocklist = await loadBlocklist();
     res.json(blocklist);
   } catch (error) {
     res.status(500).json({ error: 'Failed to load blocklist' });
   }
 });
 
-app.post('/api/admin/blocklist/add', (req, res) => {
+app.post('/api/admin/blocklist/add', async (req, res) => {
   try {
     const { wallet, reason } = req.body;
     
@@ -247,22 +261,30 @@ app.post('/api/admin/blocklist/add', (req, res) => {
       return res.status(400).json({ error: 'Wallet address is required' });
     }
     
-    const blocklist = loadBlocklist();
-    
-    if (!blocklist.blockedWallets.includes(wallet)) {
-      blocklist.blockedWallets.push(wallet);
-      blocklist.reason[wallet] = reason || 'Excluded from drawing';
-      saveBlocklist(blocklist);
+    if (USE_DATABASE) {
+      await db.addToBlocklist(wallet, reason || 'Excluded from drawing');
       console.log(`🚫 Added to blocklist: ${wallet}`);
+      const blocklist = await db.getBlocklist();
+      res.json({ success: true, blocklist });
+    } else {
+      const blocklist = await loadBlocklist();
+      
+      if (!blocklist.blockedWallets.includes(wallet)) {
+        blocklist.blockedWallets.push(wallet);
+        blocklist.reason[wallet] = reason || 'Excluded from drawing';
+        await saveBlocklist(blocklist);
+        console.log(`🚫 Added to blocklist: ${wallet}`);
+      }
+      
+      res.json({ success: true, blocklist });
     }
-    
-    res.json({ success: true, blocklist });
   } catch (error) {
+    console.error('Error adding to blocklist:', error);
     res.status(500).json({ error: 'Failed to add to blocklist' });
   }
 });
 
-app.post('/api/admin/blocklist/remove', (req, res) => {
+app.post('/api/admin/blocklist/remove', async (req, res) => {
   try {
     const { wallet } = req.body;
     
@@ -270,14 +292,22 @@ app.post('/api/admin/blocklist/remove', (req, res) => {
       return res.status(400).json({ error: 'Wallet address is required' });
     }
     
-    const blocklist = loadBlocklist();
-    blocklist.blockedWallets = blocklist.blockedWallets.filter(w => w !== wallet);
-    delete blocklist.reason[wallet];
-    saveBlocklist(blocklist);
-    
-    console.log(`✅ Removed from blocklist: ${wallet}`);
-    res.json({ success: true, blocklist });
+    if (USE_DATABASE) {
+      await db.removeFromBlocklist(wallet);
+      console.log(`✅ Removed from blocklist: ${wallet}`);
+      const blocklist = await db.getBlocklist();
+      res.json({ success: true, blocklist });
+    } else {
+      const blocklist = await loadBlocklist();
+      blocklist.blockedWallets = blocklist.blockedWallets.filter(w => w !== wallet);
+      delete blocklist.reason[wallet];
+      await saveBlocklist(blocklist);
+      
+      console.log(`✅ Removed from blocklist: ${wallet}`);
+      res.json({ success: true, blocklist });
+    }
   } catch (error) {
+    console.error('Error removing from blocklist:', error);
     res.status(500).json({ error: 'Failed to remove from blocklist' });
   }
 });
@@ -718,8 +748,75 @@ function parseSwapTransaction(txDetails, tokenAddress) {
   }
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Drawing results endpoints
+app.post('/api/drawing/save', async (req, res) => {
+  try {
+    if (!USE_DATABASE) {
+      return res.json({ success: true, message: 'Saved locally (database not configured)' });
+    }
+
+    const drawingData = req.body;
+    await db.saveDrawingResult(drawingData);
+    console.log(`💾 Saved drawing result: ${drawingData.id}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving drawing result:', error);
+    res.status(500).json({ error: 'Failed to save drawing result' });
+  }
 });
+
+app.get('/api/drawing/results', async (req, res) => {
+  try {
+    if (!USE_DATABASE) {
+      return res.json([]);
+    }
+
+    const limit = parseInt(req.query.limit) || 50;
+    const results = await db.getDrawingResults(limit);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching drawing results:', error);
+    res.status(500).json({ error: 'Failed to fetch drawing results' });
+  }
+});
+
+app.get('/api/drawing/results/:id', async (req, res) => {
+  try {
+    if (!USE_DATABASE) {
+      return res.json(null);
+    }
+
+    const id = req.params.id;
+    const result = await db.getDrawingResultById(id);
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching drawing result:', error);
+    res.status(500).json({ error: 'Failed to fetch drawing result' });
+  }
+});
+
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Initialize database if configured
+    if (USE_DATABASE) {
+      console.log('🔌 Connecting to database...');
+      await db.initializeDatabase();
+      console.log('✅ Database connected and initialized');
+    } else {
+      console.log('📁 Running in file-based mode (no database configured)');
+    }
+
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Mode: ${USE_DATABASE ? 'Database (PostgreSQL)' : 'File-based (JSON)'}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 
