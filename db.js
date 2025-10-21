@@ -113,10 +113,14 @@ async function isWalletBlocked(wallet) {
   if (!pool) return false;
   try {
     const result = await pool.query(
-      'SELECT 1 FROM blocklist WHERE wallet_address = $1',
+      'SELECT wallet_address FROM blocklist WHERE wallet_address = $1',
       [wallet]
     );
-    return result.rows.length > 0;
+    const isBlocked = result.rows.length > 0;
+    if (isBlocked) {
+      console.log(`🔒 Wallet ${wallet.slice(0, 8)} IS in blocklist`);
+    }
+    return isBlocked;
   } catch (error) {
     console.error('Error checking blocklist:', error);
     return false;

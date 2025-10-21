@@ -835,6 +835,13 @@ async function startServer() {
       console.log('🔌 Connecting to database...');
       await db.initializeDatabase();
       console.log('✅ Database connected and initialized');
+      
+      // Log blocklist contents for debugging
+      const blocklist = await db.getBlocklist();
+      console.log(`📋 Blocklist contains ${blocklist.blockedWallets.length} wallets:`);
+      blocklist.blockedWallets.forEach(wallet => {
+        console.log(`   - ${wallet.slice(0, 8)}...${wallet.slice(-8)} : ${blocklist.reason[wallet]}`);
+      });
     } else {
       console.log('📁 Running in file-based mode (no database configured)');
     }
