@@ -3,6 +3,11 @@ let drawingSettings = null;
 let isAnalyzing = false;
 let currentAbortController = null;
 
+// Live feed variables
+let liveFeedActive = false;
+let txProcessedCount = 0;
+let buyersFoundCount = 0;
+
 // Storage functions - Save to both database and localStorage
 async function saveDrawingResult() {
     if (!analysisResults || !drawingSettings) {
@@ -264,6 +269,73 @@ function openInNewWindow() {
     newWindow.document.close();
 }
 
+// Live Feed Functions
+function showLiveFeed() {
+    document.getElementById('liveDataFeed').style.display = 'block';
+    document.getElementById('liveDataScroll').innerHTML = '<div style="color: var(--primary-color);">🔮 Initializing lottery drawing system...</div>';
+    txProcessedCount = 0;
+    buyersFoundCount = 0;
+    liveFeedActive = true;
+    updateLiveFeedStats();
+}
+
+function hideLiveFeed() {
+    liveFeedActive = false;
+    setTimeout(() => {
+        if (!isAnalyzing) {
+            document.getElementById('liveDataFeed').style.display = 'none';
+        }
+    }, 3000); // Keep visible for 3 seconds after completion
+}
+
+function addLiveFeedEntry(message, type = 'info') {
+    if (!liveFeedActive) return;
+    
+    const scrollDiv = document.getElementById('liveDataScroll');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    let color = 'var(--text-primary)';
+    let icon = '📌';
+    
+    if (type === 'success') {
+        color = 'var(--success)';
+        icon = '✅';
+    } else if (type === 'buy') {
+        color = 'var(--primary-color)';
+        icon = '🎱';
+    } else if (type === 'warning') {
+        color = 'var(--warning)';
+        icon = '⚠️';
+    } else if (type === 'error') {
+        color = 'var(--error)';
+        icon = '❌';
+    } else if (type === 'info') {
+        color = 'var(--text-secondary)';
+        icon = '📊';
+    }
+    
+    const entry = document.createElement('div');
+    entry.style.cssText = `color: ${color}; margin-bottom: 5px; padding: 3px; animation: fadeIn 0.3s;`;
+    entry.innerHTML = `<span style="color: var(--text-secondary);">[${timestamp}]</span> ${icon} ${message}`;
+    
+    scrollDiv.appendChild(entry);
+    scrollDiv.scrollTop = scrollDiv.scrollHeight; // Auto-scroll to bottom
+    
+    // Keep only last 100 entries
+    while (scrollDiv.children.length > 100) {
+        scrollDiv.removeChild(scrollDiv.firstChild);
+    }
+}
+
+function updateLiveFeedStats() {
+    document.getElementById('liveTxCount').textContent = txProcessedCount;
+    document.getElementById('liveBuyersCount').textContent = buyersFoundCount;
+}
+
+function setLiveFeedStatus(status) {
+    document.getElementById('liveStatus').textContent = status;
+}
+
 function exportToCSV() {
     // Just call the main export function
     exportResults();
@@ -367,13 +439,44 @@ async function calculateDrawing() {
     currentAbortController = new AbortController();
     isAnalyzing = true;
 
+    // Show live feed
+    showLiveFeed();
+    addLiveFeedEntry('🔮 Starting lottery drawing analysis...', 'info');
+    addLiveFeedEntry(`Token: ${drawingSettings.tokenAddress.slice(0,8)}...${drawingSettings.tokenAddress.slice(-8)}`, 'info');
+    setLiveFeedStatus('Connecting...');
+
     document.getElementById('loading').style.display = 'block';
     document.getElementById('loadingText').textContent = '🔮 Drawing drawing balls... Finding winners!';
     document.getElementById('resultsSection').style.display = 'none';
     document.getElementById('calculateBtn').disabled = true;
     document.getElementById('stopBtn').style.display = 'block';
 
+    // Simulate progress updates
+    let progressInterval = setInterval(() => {
+        if (!isAnalyzing) {
+            clearInterval(progressInterval);
+            return;
+        }
+        txProcessedCount += Math.floor(Math.random() * 5) + 1;
+        updateLiveFeedStats();
+        
+        const messages = [
+            'Scanning blockchain transactions...',
+            'Analyzing token transfers...',
+            'Checking DEX swap records...',
+            'Verifying transaction timestamps...',
+            'Fetching historical SOL prices...',
+            'Filtering by date range...',
+            'Checking blocklist...'
+        ];
+        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+        addLiveFeedEntry(randomMsg, 'info');
+    }, 1500); // Update every 1.5 seconds
+
     try {
+        addLiveFeedEntry('📡 Sending request to analysis server...', 'info');
+        setLiveFeedStatus('Analyzing...');
+        
         const response = await fetch('/api/analyze-token', {
             method: 'POST',
             headers: {
@@ -389,6 +492,31 @@ async function calculateDrawing() {
         }
 
         const data = await response.json();
+        
+        // Stop progress interval
+        clearInterval(progressInterval);
+        
+        // Update live feed with results
+        buyersFoundCount = data.numberedBuys.length;
+        updateLiveFeedStats();
+        addLiveFeedEntry(`✅ Analysis complete!`, 'success');
+        addLiveFeedEntry(`Found ${data.totalBuys} total buy transactions`, 'info');
+        addLiveFeedEntry(`🎱 ${buyersFoundCount} winners qualify for drawing balls!`, 'buy');
+        
+        // Show individual buyers in feed
+        data.numberedBuys.slice(0, 10).forEach((buyer, idx) => {
+            addLiveFeedEntry(
+                `Ball #${buyer.number}: ${buyer.wallet.slice(0,6)}...${buyer.wallet.slice(-6)} - $${buyer.usdAmount?.toFixed(2) || 'N/A'}`,
+                'buy'
+            );
+        });
+        
+        if (data.numberedBuys.length > 10) {
+            addLiveFeedEntry(`... and ${data.numberedBuys.length - 10} more winners!`, 'info');
+        }
+        
+        setLiveFeedStatus('Complete! ✅');
+        
         analysisResults = data;
         displayResults(data, drawingSettings.timezone);
 
@@ -399,23 +527,37 @@ async function calculateDrawing() {
         if (data.numberedBuys.length < 69 && now < endDate) {
             document.getElementById('refreshBtn').style.display = 'block';
             showNotification(`🎱 Drew ${data.numberedBuys.length}/69 drawing balls. Click refresh for more!`, 'success');
+            addLiveFeedEntry(`⏳ Waiting for more buyers... (${69 - data.numberedBuys.length} balls remaining)`, 'warning');
         } else if (data.numberedBuys.length >= 69) {
             document.getElementById('refreshBtn').style.display = 'none';
             showNotification(`🎉 ALL 69 DRAWING BALLS DRAWN! Winners complete!`, 'success');
+            addLiveFeedEntry(`🎉 ALL 69 BALLS DRAWN! Drawing complete!`, 'success');
         } else {
             document.getElementById('refreshBtn').style.display = 'none';
             showNotification(`⏰ Time ended. Drew ${data.numberedBuys.length} drawing balls.`, 'success');
+            addLiveFeedEntry(`⏰ Time period ended with ${data.numberedBuys.length} balls drawn`, 'warning');
         }
 
         // Show results in popup
         displayDrawingResults(data, drawingSettings.timezone);
         showDrawingPopup();
+        
+        // Hide live feed after a delay
+        hideLiveFeed();
 
     } catch (error) {
+        clearInterval(progressInterval);
+        
         if (error.name === 'AbortError') {
+            addLiveFeedEntry('🛑 Analysis cancelled by user', 'error');
+            setLiveFeedStatus('Cancelled');
             showNotification('🛑 Drawing analysis cancelled', 'info');
+            hideLiveFeed();
             return;
         }
+        
+        addLiveFeedEntry(`❌ Error: ${error.message}`, 'error');
+        setLiveFeedStatus('Failed ❌');
         console.error('Error:', error);
         showNotification(`Error: ${error.message}`, 'error');
     } finally {

@@ -740,6 +740,34 @@
             </button>
         </div>
 
+        <!-- Live Data Feed -->
+        <div class="input-section" id="liveDataFeed" style="display: none; margin-top: 20px;">
+            <h3 style="color: var(--primary-color); margin-bottom: 15px; text-align: center;">
+                📊 LIVE TRANSACTION ANALYSIS
+            </h3>
+            
+            <div style="background: var(--bg-dark); border: 2px solid var(--primary-color); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 5px;">📦 Transactions</div>
+                        <div style="color: var(--primary-color); font-size: 1.8rem; font-weight: 700;" id="liveTxCount">0</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 5px;">🎱 Buyers Found</div>
+                        <div style="color: var(--success); font-size: 1.8rem; font-weight: 700;" id="liveBuyersCount">0</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 5px;">⏱️ Status</div>
+                        <div style="color: var(--warning); font-size: 1rem; font-weight: 700;" id="liveStatus">Initializing...</div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 10px; height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem;" id="liveDataScroll">
+                    <div style="color: var(--primary-color);">🔮 Initializing lottery drawing system...</div>
+                </div>
+            </div>
+        </div>
+
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p id="loadingText">🔮 Drawing drawing balls...</p>
