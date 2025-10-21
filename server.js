@@ -757,12 +757,12 @@ async function parseSwapTransaction(txDetails, tokenAddress) {
     // Be lenient - if they gained tokens, it's likely a buy even if SOL change isn't detected
     for (const [wallet, changes] of accountChanges.entries()) {
       if (changes.tokenChange > 0) {
-        // Check if wallet is blocked (liquidity pool, etc.)
-        const blocked = await isWalletBlocked(wallet);
-        if (blocked) {
-          console.log(`🚫 Blocked wallet detected: ${wallet.slice(0, 8)} - Excluding from drawing`);
-          continue;
-        }
+        // BLOCKLIST DISABLED - Show all buyers for now
+        // const blocked = await isWalletBlocked(wallet);
+        // if (blocked) {
+        //   console.log(`🚫 Blocked wallet detected: ${wallet.slice(0, 8)} - Excluding from drawing`);
+        //   continue;
+        // }
         
         // If we have both token gain and SOL spent, great!
         if (changes.solChange > 0) {
