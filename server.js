@@ -312,6 +312,39 @@ app.post('/api/admin/blocklist/remove', async (req, res) => {
   }
 });
 
+// Clear entire blocklist (emergency fix)
+app.post('/api/admin/blocklist/clear', async (req, res) => {
+  try {
+    if (USE_DATABASE) {
+      // Clear all from database
+      await db.clearBlocklist();
+      
+      // Re-add the default LP wallet
+      await db.addToBlocklist(
+        'HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC',
+        'Liquidity Pool - High frequency trading account'
+      );
+      
+      console.log('🧹 Cleared blocklist and reset to default');
+      const blocklist = await db.getBlocklist();
+      res.json({ success: true, blocklist });
+    } else {
+      const defaultBlocklist = {
+        blockedWallets: ["HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC"],
+        reason: {
+          "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC": "Liquidity Pool - High frequency trading account"
+        }
+      };
+      await saveBlocklist(defaultBlocklist);
+      console.log('🧹 Cleared blocklist and reset to default');
+      res.json({ success: true, blocklist: defaultBlocklist });
+    }
+  } catch (error) {
+    console.error('Error clearing blocklist:', error);
+    res.status(500).json({ error: 'Failed to clear blocklist' });
+  }
+});
+
 // Diagnostic scan - get ALL buys without filters
 app.post('/api/scan-all-buys', async (req, res) => {
   try {

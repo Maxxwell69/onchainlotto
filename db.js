@@ -109,6 +109,18 @@ async function removeFromBlocklist(walletAddress) {
   }
 }
 
+async function clearBlocklist() {
+  if (!pool) return false;
+  try {
+    await pool.query('DELETE FROM blocklist');
+    console.log('🧹 All wallets removed from blocklist');
+    return true;
+  } catch (error) {
+    console.error('Error clearing blocklist:', error);
+    return false;
+  }
+}
+
 async function isWalletBlocked(wallet) {
   if (!pool) return false;
   try {
@@ -198,6 +210,7 @@ module.exports = {
   getBlocklist,
   addToBlocklist,
   removeFromBlocklist,
+  clearBlocklist,
   isWalletBlocked,
   saveDrawingResult,
   getDrawingResults,

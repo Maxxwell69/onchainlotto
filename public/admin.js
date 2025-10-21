@@ -124,6 +124,33 @@ async function removeFromBlocklist(wallet) {
     }
 }
 
+async function clearBlocklist() {
+    if (!confirm('⚠️ This will CLEAR ALL blocked wallets and reset to default (only the LP wallet).\n\nAre you sure?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/blocklist/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayBlocklist(data.blocklist);
+            showNotification('🧹 Blocklist cleared and reset to default!', 'success');
+        } else {
+            showNotification('Failed to clear blocklist', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error clearing blocklist', 'error');
+    }
+}
+
 function isValidSolanaAddress(address) {
     return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
 }

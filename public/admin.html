@@ -238,7 +238,12 @@
 
         <!-- Current Blocklist Section -->
         <div class="section">
-            <h2>📋 Current Blocklist <span class="stat-badge" id="blocklistCount">0</span></h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">📋 Current Blocklist <span class="stat-badge" id="blocklistCount">0</span></h2>
+                <button class="btn" onclick="clearBlocklist()" style="background: var(--error); width: auto; padding: 12px 25px; font-size: 0.9rem;">
+                    🧹 Clear All (Reset to Default)
+                </button>
+            </div>
             
             <table id="blocklistTable">
                 <thead>
