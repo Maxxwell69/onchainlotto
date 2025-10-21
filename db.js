@@ -1,13 +1,20 @@
 const { Pool } = require('pg');
 
-// Create PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// Create PostgreSQL connection pool only if DATABASE_URL is set
+let pool = null;
+
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  });
+}
 
 // Initialize database tables
 async function initializeDatabase() {
+  if (!pool) {
+    throw new Error('Database connection not configured');
+  }
   const client = await pool.connect();
   try {
     // Create blocklist table
@@ -56,6 +63,7 @@ async function initializeDatabase() {
 
 // Blocklist functions
 async function getBlocklist() {
+  if (!pool) return { blockedWallets: [], reason: {} };
   try {
     const result = await pool.query(
       'SELECT wallet_address, reason, created_at FROM blocklist ORDER BY created_at DESC'
@@ -74,6 +82,7 @@ async function getBlocklist() {
 }
 
 async function addToBlocklist(walletAddress, reason) {
+  if (!pool) return false;
   try {
     await pool.query(
       'INSERT INTO blocklist (wallet_address, reason) VALUES ($1, $2) ON CONFLICT (wallet_address) DO NOTHING',
@@ -87,6 +96,7 @@ async function addToBlocklist(walletAddress, reason) {
 }
 
 async function removeFromBlocklist(walletAddress) {
+  if (!pool) return false;
   try {
     await pool.query(
       'DELETE FROM blocklist WHERE wallet_address = $1',
@@ -100,6 +110,7 @@ async function removeFromBlocklist(walletAddress) {
 }
 
 async function isWalletBlocked(wallet) {
+  if (!pool) return false;
   try {
     const result = await pool.query(
       'SELECT 1 FROM blocklist WHERE wallet_address = $1',
@@ -114,6 +125,7 @@ async function isWalletBlocked(wallet) {
 
 // Drawing results functions
 async function saveDrawingResult(drawingData) {
+  if (!pool) return false;
   try {
     await pool.query(
       'INSERT INTO drawing_results (drawing_id, timestamp, settings, results) VALUES ($1, $2, $3, $4)',
@@ -132,6 +144,7 @@ async function saveDrawingResult(drawingData) {
 }
 
 async function getDrawingResults(limit = 50) {
+  if (!pool) return [];
   try {
     const result = await pool.query(
       'SELECT * FROM drawing_results ORDER BY timestamp DESC LIMIT $1',
@@ -152,6 +165,7 @@ async function getDrawingResults(limit = 50) {
 }
 
 async function getDrawingResultById(id) {
+  if (!pool) return null;
   try {
     const result = await pool.query(
       'SELECT * FROM drawing_results WHERE drawing_id = $1',
