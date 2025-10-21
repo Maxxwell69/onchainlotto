@@ -341,7 +341,7 @@ app.post('/api/scan-all-buys', async (req, res) => {
         }
         
         const txDetails = await getEnhancedTransaction(sig);
-        if (txDetails && txDetails.type === 'SWAP') {
+        if (txDetails && (txDetails.type === 'SWAP' || txDetails.type === 'PUMPFUN')) {
           const trade = parseSwapTransaction(txDetails, tokenAddress);
           if (trade && trade.direction === 'BUY') {
             buyTrades.push(trade);
@@ -416,7 +416,7 @@ app.post('/api/analyze-token', async (req, res) => {
         }
         
         const txDetails = await getEnhancedTransaction(sig);
-        if (txDetails && txDetails.type === 'SWAP') {
+        if (txDetails && (txDetails.type === 'SWAP' || txDetails.type === 'PUMPFUN')) {
           const trade = parseSwapTransaction(txDetails, tokenAddress);
           if (trade && trade.direction === 'BUY') {
             buyTrades.push(trade);
@@ -603,10 +603,26 @@ function parseEnhancedTx(tx) {
     const meta = tx.meta;
     const instructions = tx.transaction.message.instructions;
     
-    // If there are token balance changes, it's likely a swap
+    // Check if this is a pump.fun transaction
+    // Pump.fun program ID: 6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P
+    const PUMPFUN_PROGRAM = '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P';
+    
+    let isPumpFun = false;
+    if (instructions && Array.isArray(instructions)) {
+      for (const ix of instructions) {
+        const programId = ix.programId || (typeof ix.program === 'string' ? ix.program : null);
+        if (programId === PUMPFUN_PROGRAM) {
+          isPumpFun = true;
+          console.log(`🔥 Detected pump.fun transaction!`);
+          break;
+        }
+      }
+    }
+    
+    // If there are token balance changes, it's a swap or pump.fun trade
     if (meta && meta.postTokenBalances && meta.postTokenBalances.length > 0) {
       return {
-        type: 'SWAP',
+        type: isPumpFun ? 'PUMPFUN' : 'SWAP',
         signature: tx.transaction.signatures[0],
         blockTime: tx.blockTime,
         meta: meta,
@@ -624,11 +640,16 @@ function parseEnhancedTx(tx) {
 // Parse swap transaction to determine buy/sell and amount
 function parseSwapTransaction(txDetails, tokenAddress) {
   try {
-    const { meta, blockTime, signature, accounts } = txDetails;
+    const { meta, blockTime, signature, accounts, type } = txDetails;
     
     if (!meta) {
       console.log(`❌ No meta for ${signature.slice(0, 8)}`);
       return null;
+    }
+    
+    // Log if this is a pump.fun transaction
+    if (type === 'PUMPFUN') {
+      console.log(`🔥 Parsing pump.fun transaction ${signature.slice(0, 8)}`);
     }
 
     // Find token balance changes
