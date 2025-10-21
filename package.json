@@ -1,7 +1,7 @@
 {
   "name": "lotto-af-on-chain-lottery",
-  "version": "1.0.0",
-  "description": "On-chain drawing system for LOTTA AF token on Solana blockchain",
+  "version": "1.5.0",
+  "description": "Universal on-chain lottery drawing system for ANY Solana token - Find first 69 buyers",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,10 +9,12 @@
   },
   "keywords": [
     "solana",
+    "lottery",
     "drawing",
     "blockchain",
-    "meme-coin",
-    "lotta-af"
+    "universal",
+    "token",
+    "spl-token"
   ],
   "author": "LOTTO AF Team",
   "license": "MIT",
