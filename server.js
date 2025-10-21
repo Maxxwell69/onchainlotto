@@ -641,6 +641,11 @@ function parseSwapTransaction(txDetails, tokenAddress) {
 
     // Check token balance changes for our specific token
     for (const postBal of postBalances) {
+      // Debug: Log the mint we're checking
+      if (!foundOurToken) {
+        console.log(`🔍 Checking mint: ${postBal.mint} vs target: ${tokenAddress}`);
+      }
+      
       if (postBal.mint === tokenAddress) {
         foundOurToken = true;
         const preBal = preBalances.find(pb => 
@@ -650,6 +655,8 @@ function parseSwapTransaction(txDetails, tokenAddress) {
         const preAmount = preBal ? parseFloat(preBal.uiTokenAmount.uiAmount || 0) : 0;
         const postAmount = parseFloat(postBal.uiTokenAmount.uiAmount || 0);
         const change = postAmount - preAmount;
+        
+        console.log(`📊 Token change for ${postBal.owner?.slice(0,8)}: ${preAmount} → ${postAmount} (${change > 0 ? '+' : ''}${change.toFixed(2)})`);
         
         if (change > 0) {
           // This account gained tokens
@@ -663,8 +670,11 @@ function parseSwapTransaction(txDetails, tokenAddress) {
     }
 
     if (!foundOurToken) {
+      console.log(`❌ Token ${tokenAddress.slice(0,8)}... not found in transaction ${signature.slice(0,8)}`);
       return null;
     }
+    
+    console.log(`✅ Found token ${tokenAddress.slice(0,8)}... in transaction!`);
 
     // Check SOL balance changes - be more lenient
     if (meta.preBalances && meta.postBalances && accounts) {
